@@ -21,8 +21,8 @@ public class PetstoreAuthService
     public String getToken()
     {
         LoginRequestDTO loginRequestDTO = LoginRequestDTO.builder()
-                                                         .user("dummy")
-                                                         .pass("dummy")
+                                                         .user("admin")
+                                                         .pass("admin")
                                                          .build();
 
         return petstoreAuthAdapter.getPetstoreAuthWebClient()

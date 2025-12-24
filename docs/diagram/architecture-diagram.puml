@@ -1,0 +1,74 @@
+@startuml Petstore MCP Server Architecture
+!theme plain
+scale 2
+skinparam backgroundColor #FEFEFE
+skinparam ArrowColor #333333
+skinparam componentBackgroundColor #E8F4F8
+skinparam componentBorderColor #0066CC
+skinparam packageBackgroundColor #F0F0F0
+skinparam packageBorderColor #666666
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #0066CC
+
+title Petstore MCP Server - System Architecture
+
+actor "AI Agent Client" as ai_client
+
+package "Petstore MCP Server\n(Spring Boot 4.0.0)" as mcp_server {
+    component "MCP Protocol Handler\n(SSE)" as mcp_handler
+    
+    package "Tool Callback Provider" as tools {
+        component "registerPet()" as tool_register
+        component "findAllPet()" as tool_find_all
+        component "findPetByName()" as tool_find_by_name
+    }
+    
+    package "Service Layer" as services {
+        component "PetstoreCoreService" as core_service
+        component "PetstoreAuthService" as auth_service
+    }
+    
+    package "Adapter Layer" as adapters {
+        component "PetstoreCoreAdapter" as core_adapter
+        component "PetstoreAuthAdapter" as auth_adapter
+    }
+    
+    mcp_handler --> tools : exposes
+    core_service --> adapters : uses
+    auth_service --> adapters : uses
+    tools --> services : delegates to
+}
+
+package "Backend Services" as backend {
+    component "Auth Service\n(Port 3001)" as auth_server
+    component "Core Service\n(Port 3000)" as core_server
+    component "Monitor Service\n(Port 3002)" as monitor_server
+}
+
+component "MongoDB\n(Port 27017)" as mongodb
+
+ai_client --> mcp_handler
+core_adapter --> core_server: Pet operations\n(with token)
+auth_adapter --> auth_server: token exchange
+
+core_server --> monitor_server : health/status
+core_server --> auth_server : token validation
+
+core_server --> mongodb : read/write
+
+note right of ai_client
+  Sends MCP requests
+  to invoke tools
+end note
+
+note bottom of tools
+  Tools exposed as MCP-compliant
+  operations for AI clients
+end note
+
+note bottom of backend
+  External microservices
+  handling core business logic
+end note
+
+@enduml

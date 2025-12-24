@@ -93,24 +93,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--auth-url",
-        default=os.environ.get("AUTH_URL", "http://localhost:3000"),
-        help="Base URL of the Auth API (default: http://localhost:3000 or $AUTH_URL).",
+        default="http://localhost:3001",
+        help="Base URL of the Auth API (default: http://localhost:3001).",
     )
     parser.add_argument(
         "--core-url",
-        default=os.environ.get("CORE_URL", "http://localhost:3001"),
-        help="Base URL of the Core API (default: http://localhost:3001 or $CORE_URL).",
-    )
-    parser.add_argument(
-        "--user",
-        default=os.environ.get("POPULATOR_USER", "admin"),
-        help="Auth username (default: admin or $POPULATOR_USER).",
-    )
-    parser.add_argument(
-        "--pass",
-        dest="password",
-        default=os.environ.get("POPULATOR_PASS", "admin"),
-        help="Auth password (default: admin or $POPULATOR_PASS).",
+        default="http://localhost:3000",
+        help="Base URL of the Core API (default: http://localhost:3000).",
     )
 
     args = parser.parse_args()
@@ -124,7 +113,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     try:
-        token = get_token(args.auth_url, args.user, args.password)
+        token = get_token(args.auth_url, "admin", "admin")
+        print(f"Obtained token: {token}")
     except RuntimeError as exc:
         print(f"Error getting token: {exc}")
         sys.exit(1)
