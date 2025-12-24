@@ -25,7 +25,7 @@ services:
     environment:
       - PORT=3001
       - NODE_ENV=prod
-      - TEMPO_EXP=1d
+      - TOKEN_EXP=1d
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/"]
       interval: 10s

@@ -45,9 +45,9 @@ def random_age() -> int:
 
 def build_pet_payload(seq: int) -> dict:
     return {
-        "nome": f"{random.choice(PET_NAMES)}-{seq}",
-        "raca": random.choice(BREEDS),
-        "idade": random_age(),
+        "name": f"{random.choice(PET_NAMES)}-{seq}",
+        "breed": random.choice(BREEDS),
+        "age": random_age(),
     }
 
 

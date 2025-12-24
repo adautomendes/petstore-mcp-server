@@ -28,13 +28,13 @@ public class PetstoreCoreService
 
     @Tool(description = "Register a new pet")
     public PetDTO registerPet(@ToolParam(description = "The pet name") String nome,
-                              @ToolParam(description = "The pet breed") String raca,
-                              @ToolParam(description = "The pet age") Integer idade)
+                              @ToolParam(description = "The pet breed") String breed,
+                              @ToolParam(description = "The pet age") Integer age)
     {
         PetDTO petDTO = PetDTO.builder()
-                              .nome(nome)
-                              .raca(raca)
-                              .idade(idade)
+                              .name(nome)
+                              .breed(breed)
+                              .age(age)
                               .build();
 
         return petstoreCoreAdapter.getPetstoreCoreWebClient()

@@ -16,9 +16,9 @@ public class PetDTO
     @JsonProperty("_id")
     private String id;
 
-    private String nome;
+    private String name;
 
-    private String raca;
+    private String breed;
 
-    private Integer idade;
+    private Integer age;
 }

@@ -181,6 +181,12 @@ cd /path/to/petstore-mcp-server
 docker compose up -d
 ```
 
+The Docker Compose setup will:
+- Build the MCP Server from source (Dockerfile at [docker/Dockerfile](docker/Dockerfile))
+- Use pre-built images from Docker Hub for dependent services
+- Create a network for service-to-service communication
+- Set up health checks for all services
+
 Services will be available at:
 - **Petstore MCP Server**: http://localhost:8082
 - **Petstore Core API**: http://localhost:3000
@@ -272,18 +278,17 @@ Registers a new pet in the petstore system.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `nome` | String | Yes | The pet's name |
-| `raca` | String | Yes | The pet's breed |
-| `idade` | Integer | Yes | The pet's age in years |
+| `breed` | String | Yes | The pet's breed |
+| `age` | Integer | Yes | The pet's age in years |
 
 **Response:**
 
 ```json
 {
   "id": "507f1f77bcf86cd799439011",
-  "nome": "Bella",
-  "raca": "Labrador",
-  "idade": 5,
-  "dataRegistro": "2024-12-24T10:30:00Z"
+  "name": "Bella",
+  "breed": "Labrador",
+  "age": 5
 }
 ```
 
@@ -295,8 +300,8 @@ tool_use = {
     "name": "registerPet",
     "input": {
         "nome": "Buddy",
-        "raca": "Golden Retriever",
-        "idade": 3
+        "breed": "Golden Retriever",
+        "age": 3
     }
 }
 ```
@@ -317,17 +322,15 @@ Returns a list of all registered pets in the system.
 [
   {
     "id": "507f1f77bcf86cd799439011",
-    "nome": "Bella",
-    "raca": "Labrador",
-    "idade": 5,
-    "dataRegistro": "2024-12-24T10:30:00Z"
+    "name": "Bella",
+    "breed": "Labrador",
+    "age": 5
   },
   {
     "id": "507f1f77bcf86cd799439012",
-    "nome": "Max",
-    "raca": "German Shepherd",
-    "idade": 3,
-    "dataRegistro": "2024-12-24T10:35:00Z"
+    "name": "Max",
+    "breed": "German Shepherd",
+    "age": 3
   }
 ]
 ```
@@ -362,10 +365,9 @@ Returns a list of pets matching the provided name.
 [
   {
     "id": "507f1f77bcf86cd799439011",
-    "nome": "Bella",
-    "raca": "Labrador",
-    "idade": 5,
-    "dataRegistro": "2024-12-24T10:30:00Z"
+    "name": "Bella",
+    "breed": "Labrador",
+    "age": 5
   }
 ]
 ```
@@ -402,10 +404,10 @@ tool_use = {
         "type": "object",
         "properties": {
           "nome": {"type": "string", "description": "The pet name"},
-          "raca": {"type": "string", "description": "The pet breed"},
-          "idade": {"type": "integer", "description": "The pet age"}
+          "breed": {"type": "string", "description": "The pet breed"},
+          "age": {"type": "integer", "description": "The pet age"}
         },
-        "required": ["nome", "raca", "idade"]
+        "required": ["nome", "breed", "age"]
       }
     },
     {
@@ -498,8 +500,8 @@ public class PetstoreCoreService {
     @Tool(description = "Register a new pet")
     public PetDTO registerPet(
         @ToolParam(description = "The pet name") String nome,
-        @ToolParam(description = "The pet breed") String raca,
-        @ToolParam(description = "The pet age") Integer idade)
+        @ToolParam(description = "The pet breed") String breed,
+        @ToolParam(description = "The pet age") Integer age)
     
     @Tool(description = "Returns a list with all registered pets")
     public List<PetDTO> findAllPet()
@@ -549,7 +551,7 @@ public class PetstoreAuthAdapter {
 
 **[PetDTO.java](java/src/main/java/com/adauto/mediamanager/mcp/server/model/dto/PetDTO.java)**
 
-Data transfer object for pet information.
+Data transfer object for pet information with fields: `id`, `name`, `breed`, `age`.
 
 **[LoginRequestDTO.java](java/src/main/java/com/adauto/mediamanager/mcp/server/model/dto/LoginRequestDTO.java)**
 
@@ -565,7 +567,7 @@ Response model containing authentication token.
 
 To add a new tool to the MCP server:
 
-1. **Add method to PetstoreCoreService:**
+1. **Add method to [PetstoreCoreService.java](java/src/main/java/com/adauto/mediamanager/mcp/server/service/PetstoreCoreService.java):**
 
 ```java
 @Tool(description = "Your tool description")
@@ -573,7 +575,8 @@ public YourReturnType yourToolMethod(
     @ToolParam(description = "Parameter description") String param1,
     @ToolParam(description = "Parameter description") String param2)
 {
-    // Implementation
+    // Implementation logic
+    // Make WebClient calls to petstore-core via petstoreCoreAdapter
     return result;
 }
 ```
@@ -581,10 +584,17 @@ public YourReturnType yourToolMethod(
 2. **Rebuild and deploy:**
 
 ```bash
+cd java
 mvn clean package
 ```
 
-The tool will automatically be registered with the MCP server.
+3. **If using Docker:**
+
+```bash
+docker compose up -d --build
+```
+
+The tool will automatically be registered with the MCP server and exposed to AI clients.
 
 ---
 
